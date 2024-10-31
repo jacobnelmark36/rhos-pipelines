@@ -1,0 +1,58 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: build
+spec:
+  workspaces:
+  - name: shared-workspace
+  params:
+  - name: git-url
+    type: string
+    description: url of the git repo for the code of deployment
+    default: https://github.com/jacobnelmark36/guide-openshift-local-crc.git
+  - name: git-revision
+    type: string
+    description: revision to be used from repo of the code for deployment
+    default: dev2
+  - name: file-path
+    type: string
+    description: path to Readme.md in repo
+    default: system/Readme.md
+  tasks:
+  - name: clone-repo
+    taskRef:
+      resolver: git
+      params:
+      - name: url
+        value: https://github.com/jacobnelmark36/rhos-pipelines.git
+      - name: revision
+        value: main
+      - name: pathInRepo
+        value: ci/tasks/git-clone.yaml
+    workspaces:
+    - name: source-code
+      workspace: shared-workspace
+    params:
+    - name: url
+      value: $(params.git-url)
+    - name: subdirectory
+      value: ""
+    - name: deleteExisting
+      value: "true"
+    - name: revision
+      value: $(params.git-revision)
+  - name: echo-readme
+    params:
+    - name: filePath
+      value: $(params.file-path)
+    taskSpec:
+      params:
+      - name: filePath
+        type: string
+      steps:
+      - image: ubuntu
+        script: |
+          #!/bin/bash
+          ls -la
+          cat $(params.filePath)
+
