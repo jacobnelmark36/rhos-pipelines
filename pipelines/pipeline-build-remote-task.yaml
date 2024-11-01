@@ -17,7 +17,7 @@ spec:
   - name: file-path
     type: string
     description: path to Readme.md in repo
-    default: system/Readme.md
+    default: workspace/repo/system/Readme.md
   tasks:
   - name: clone-repo
     taskRef:
