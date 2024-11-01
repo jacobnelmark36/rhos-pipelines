@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: build
+  name: build-demo
 spec:
   workspaces:
   - name: shared-workspace
@@ -30,7 +30,7 @@ spec:
       - name: pathInRepo
         value: ci/tasks/git-clone.yaml
     workspaces:
-    - name: source-code
+    - name: repo
       workspace: shared-workspace
     params:
     - name: url
@@ -42,6 +42,9 @@ spec:
     - name: revision
       value: $(params.git-revision)
   - name: echo-readme
+    workspaces:
+    - name: repo
+      workspace: shared-workspace
     params:
     - name: filePath
       value: $(params.file-path)
