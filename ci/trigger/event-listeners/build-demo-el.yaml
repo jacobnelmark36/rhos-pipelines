@@ -1,0 +1,13 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: build-demo-event-listener
+spec:
+  taskRunTemplate:
+    serviceAccountName: pipeline
+  triggers:
+    - name: build-demo-trigger
+      bindings:
+      - ref: build-demo-binding
+      template:
+        ref: build-demo-template

@@ -14,6 +14,10 @@ spec:
     type: string
     description: revision to be used from repo of the code for deployment
     default: dev2
+  - name: git-repo-name
+    type: string
+    description: git repo name
+    default: system-app
   - name: file-path
     type: string
     description: path to Readme.md in repo
@@ -46,10 +50,14 @@ spec:
     - name: repo
       workspace: shared-workspace
     params:
+    - name: repoName
+      value: $(params.git-repo-name)
     - name: filePath
       value: $(params.file-path)
     taskSpec:
       params:
+      - name: repoName
+        type: string
       - name: filePath
         type: string
       steps:
@@ -58,4 +66,5 @@ spec:
           #!/bin/bash
           ls -la
           cat $(params.filePath)
+          echo "name of repo: $(params.repoName)"
 
