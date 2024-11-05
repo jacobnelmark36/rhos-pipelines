@@ -22,6 +22,18 @@ spec:
     type: string
     description: path to Readme.md in repo
     default: workspace/repo/system/Readme.md
+  - name: IMAGE
+    type: string
+    description: Fully qualified container image name to be built by Buildah.
+    default: image-registry.openshift-image-registry.svc:5000/pipeline-demo/system:1.0-SNAPSHOT
+  - name: DOCKERFILE
+    type: string
+    description: Path to the Dockerfile (or Containerfile) relative to the source workspace.
+    default: workspace/source/system/Dockerfile
+  - name: CONTEXT
+    type: string
+    description: Path to the directory to use as the context.
+    default: workspace/source/system/
   tasks:
   - name: clone-repo
     taskRef:
@@ -54,6 +66,8 @@ spec:
       value: $(params.git-repo-name)
     - name: filePath
       value: $(params.file-path)
+    runAfter:
+    - clone-repo
     taskSpec:
       params:
       - name: repoName
@@ -67,4 +81,26 @@ spec:
           ls -la
           cat $(params.filePath)
           echo "name of repo: $(params.repoName)"
+  - name: build-image
+    taskRef:
+      resolver: cluster
+      params:
+      - name: kind
+        value: task
+      - name: name
+        value: buildah
+      - name: namespace
+        value: openshift-pipelines
+    runAfter:
+    - echo-readme
+    params:
+    - name: IMAGE
+      value: $(params.IMAGE)
+    - name: DOCKERFILE
+      value: $(params.DOCKERFILE)
+    - name: CONTEXT
+      value: $(params.CONTEXT)
+    workspaces:
+    - name: source
+      workspace: shared-workspace
 

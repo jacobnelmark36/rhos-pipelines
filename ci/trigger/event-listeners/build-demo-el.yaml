@@ -3,11 +3,10 @@ kind: EventListener
 metadata:
   name: build-demo-event-listener
 spec:
-  taskRunTemplate:
-    serviceAccountName: pipeline
+  serviceAccountName: pipeline
   triggers:
-    - name: build-demo-trigger
-      bindings:
-      - ref: build-demo-binding
-      template:
-        ref: build-demo-template
+  - name: build-demo-trigger
+    bindings:
+    - ref: build-demo-binding
+    template:
+      ref: build-demo-template
