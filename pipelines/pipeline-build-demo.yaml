@@ -6,36 +6,48 @@ spec:
   workspaces:
   - name: shared-workspace
   params:
-  - name: git-url
+  - name: app-git-url
     type: string
-    description: url of the git repo for the code of deployment
+    description: url of the app git repo for the code of deployment
     default: https://github.com/jacobnelmark36/guide-openshift-local-crc.git
-  - name: git-revision
+  - name: app-git-revision
     type: string
-    description: revision to be used from repo of the code for deployment
+    description: revision to be used from repo of the app code for deployment
     default: dev2
-  - name: git-repo-name
+  - name: helm-git-url
     type: string
-    description: git repo name
+    description: url of the helm chart git repo for the code of deployment
+    default: https://github.com/jacobnelmark36/system-chart.git
+  - name: helm-git-revision
+    type: string
+    description: revision to be used from repo of the helm chart for deployment
+    default: main
+  - name: app-name
+    type: string
+    description: name of app to be deployed
     default: system-app
-  - name: file-path
+  - name: app-readme-path
     type: string
     description: path to Readme.md in repo
     default: workspace/repo/system/Readme.md
+  - name: helm-readme-path
+    type: string
+    description: path to Readme.md in repo
+    default: workspace/repo/system-chart/Readme.md
   - name: IMAGE
     type: string
     description: Fully qualified container image name to be built by Buildah.
-    default: image-registry.openshift-image-registry.svc:5000/pipeline-demo/system:1.0-SNAPSHOT
+    default: image-registry.openshift-image-registry.svc:5000/pipeline-demo/system:1.1-SNAPSHOT
   - name: DOCKERFILE
     type: string
     description: Path to the Dockerfile (or Containerfile) relative to the source workspace.
-    default: workspace/source/system/Dockerfile
+    default: system/Dockerfile
   - name: CONTEXT
     type: string
     description: Path to the directory to use as the context.
-    default: workspace/source/system/
+    default: system/.
   tasks:
-  - name: clone-repo
+  - name: clone-app-repo
     taskRef:
       resolver: git
       params:
@@ -50,27 +62,49 @@ spec:
       workspace: shared-workspace
     params:
     - name: url
-      value: $(params.git-url)
+      value: $(params.app-git-url)
     - name: subdirectory
       value: ""
     - name: deleteExisting
       value: "true"
     - name: revision
-      value: $(params.git-revision)
-  - name: echo-readme
+      value: $(params.app-git-revision)
+  - name: clone-helm-repo
+    taskRef:
+      resolver: git
+      params:
+      - name: url
+        value: https://github.com/jacobnelmark36/rhos-pipelines.git
+      - name: revision
+        value: main
+      - name: pathInRepo
+        value: ci/tasks/git-clone.yaml
     workspaces:
     - name: repo
       workspace: shared-workspace
     params:
-    - name: repoName
-      value: $(params.git-repo-name)
+    - name: url
+      value: $(params.helm-git-url)
+    - name: subdirectory
+      value: "system-chart"
+    - name: deleteExisting
+      value: "true"
+    - name: revision
+      value: $(params.helm-git-revision)
+  - name: echo-app-readme
+    workspaces:
+    - name: repo
+      workspace: shared-workspace
+    params:
+    - name: appName
+      value: $(params.app-name)
     - name: filePath
-      value: $(params.file-path)
+      value: $(params.app-readme-path)
     runAfter:
-    - clone-repo
+    - clone-app-repo
     taskSpec:
       params:
-      - name: repoName
+      - name: appName
         type: string
       - name: filePath
         type: string
@@ -80,7 +114,31 @@ spec:
           #!/bin/bash
           ls -la
           cat $(params.filePath)
-          echo "name of repo: $(params.repoName)"
+          echo "name of app: $(params.appName)"
+  - name: echo-helm-readme
+    workspaces:
+    - name: repo
+      workspace: shared-workspace
+    params:
+    - name: appName
+      value: $(params.app-name)
+    - name: filePath
+      value: $(params.helm-readme-path)
+    runAfter:
+    - clone-helm-repo
+    taskSpec:
+      params:
+      - name: appName
+        type: string
+      - name: filePath
+        type: string
+      steps:
+      - image: ubuntu
+        script: |
+          #!/bin/bash
+          ls -la
+          cat $(params.filePath)
+          echo "name of app: $(params.appName)"
   - name: build-image
     taskRef:
       resolver: cluster
@@ -92,7 +150,7 @@ spec:
       - name: namespace
         value: openshift-pipelines
     runAfter:
-    - echo-readme
+    - echo-app-readme
     params:
     - name: IMAGE
       value: $(params.IMAGE)

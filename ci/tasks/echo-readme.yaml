@@ -1,0 +1,24 @@
+  - name: echo-readme
+    workspaces:
+    - name: repo
+      workspace: shared-workspace
+    params:
+    - name: appName
+      value: $(params.app-name)
+    - name: filePath
+      value: $(params.file-path)
+    runAfter:
+    - clone-app-repo
+    taskSpec:
+      params:
+      - name: appName
+        type: string
+      - name: filePath
+        type: string
+      steps:
+      - image: ubuntu
+        script: |
+          #!/bin/bash
+          ls -la
+          cat $(params.filePath)
+          echo "name of app: $(params.appName)"
