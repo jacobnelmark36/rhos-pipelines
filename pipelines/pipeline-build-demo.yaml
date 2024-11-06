@@ -33,7 +33,7 @@ spec:
   - name: helm-readme-path
     type: string
     description: path to Readme.md in repo
-    default: workspace/repo/system-chart/Readme.md
+    default: workspace/repo/system-chart/README.md
   - name: IMAGE
     type: string
     description: Fully qualified container image name to be built by Buildah.
