@@ -21,7 +21,10 @@ cd rhos-pipelines
 # OpenShift Local Setup Commands
 eval $(crc podman-env)
 eval $(crc oc-env)
+
 oc get co
+oc get project
+
 oc config set-context crc-developer
 oc new-project pipeline-demo
 

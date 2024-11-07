@@ -33,7 +33,7 @@ spec:
   - name: helm-readme-path
     type: string
     description: path to Readme.md in repo
-    default: workspace/repo/system-chart/README.md
+    default: workspace/repo/helm/README.md
   - name: IMAGE
     type: string
     description: Fully qualified container image name to be built by Buildah.
@@ -46,6 +46,22 @@ spec:
     type: string
     description: Path to the directory to use as the context.
     default: system/.
+  - name: charts_dir
+    type: string
+    description: The directory relative to the source workspace that contains the helm chart
+    default: helm/system-chart
+  - name: release_version
+    type: string
+    description: The helm release version in semantic versioning format
+    default: v0.0.1
+  - name: release_namespace
+    type: string
+    description: The helm release namespace
+    default: pipeline-demo
+  - name: values_file
+    type: string
+    description: The values file to be used relative to the source workspace
+    default: helm/helm-deploy-values.yaml
   tasks:
   - name: clone-app-repo
     taskRef:
@@ -86,7 +102,7 @@ spec:
     - name: url
       value: $(params.helm-git-url)
     - name: subdirectory
-      value: "system-chart"
+      value: "helm"
     - name: deleteExisting
       value: "true"
     - name: revision
@@ -139,7 +155,7 @@ spec:
           ls -la
           cat $(params.filePath)
           echo "name of app: $(params.appName)"
-  - name: build-image
+  - name: build-push-image
     taskRef:
       resolver: cluster
       params:
@@ -151,6 +167,7 @@ spec:
         value: openshift-pipelines
     runAfter:
     - echo-app-readme
+    - echo-helm-readme
     params:
     - name: IMAGE
       value: $(params.IMAGE)
@@ -161,4 +178,29 @@ spec:
     workspaces:
     - name: source
       workspace: shared-workspace
-
+  - name: helm-upgrade
+    taskRef:
+      resolver: cluster
+      params:
+      - name: kind
+        value: task
+      - name: name
+        value: helm-upgrade-from-source
+      - name: namespace
+        value: openshift-pipelines
+    runAfter:
+    - build-push-image
+    params:
+    - name: release_name
+      value: $(params.app-name)
+    - name: release_version
+      value: $(params.release_version)
+    - name: charts_dir
+      value: $(params.charts_dir)
+    - name: values_file
+      value: $(params.values_file)
+    - name: release_namespace
+      value: $(params.release_namespace)
+    workspaces:
+    - name: source
+      workspace: shared-workspace
