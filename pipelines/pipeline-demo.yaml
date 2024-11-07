@@ -202,5 +202,5 @@ spec:
     - name: release_namespace
       value: $(params.release_namespace)
     workspaces:
-    - name: source
+    - name: repo
       workspace: shared-workspace
