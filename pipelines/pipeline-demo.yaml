@@ -37,7 +37,7 @@ spec:
   - name: IMAGE
     type: string
     description: Fully qualified container image name to be built by Buildah.
-    default: image-registry.openshift-image-registry.svc:5000/pipeline-demo/system:1.1-SNAPSHOT
+    default: image-registry.openshift-image-registry.svc:5000/pipeline-demo/system:1.0-SNAPSHOT
   - name: DOCKERFILE
     type: string
     description: Path to the Dockerfile (or Containerfile) relative to the source workspace.
@@ -180,14 +180,14 @@ spec:
       workspace: shared-workspace
   - name: helm-upgrade
     taskRef:
-      resolver: cluster
+      resolver: git
       params:
-      - name: kind
-        value: task
-      - name: name
-        value: helm-upgrade-from-source
-      - name: namespace
-        value: openshift-pipelines
+      - name: url
+        value: https://github.com/jacobnelmark36/rhos-pipelines.git
+      - name: revision
+        value: main
+      - name: pathInRepo
+        value: ci/tasks/helm-upgrade-from-source.yaml
     runAfter:
     - build-push-image
     params:

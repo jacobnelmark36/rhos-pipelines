@@ -36,8 +36,8 @@ crc console
 ## Create / Update Pipeline
 
 ```shell
-oc create -f pipelines/pipeline-build-demo.yaml
+oc create -f pipelines/pipeline-demo.yaml
 
 # Update Pipeline
-oc replace -f pipelines/pipeline-build-demo.yaml
+oc replace -f pipelines/pipeline-demo.yaml
 ```
